@@ -48,8 +48,18 @@ public class DBservice {
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-
         return null;
+    }
+
+    public void changeNickname(String oldNickname, String newNickname) {
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE auth_list SET nickname = ? WHERE nickname = ?");
+            preparedStatement.setString(1, newNickname);
+            preparedStatement.setString(2, oldNickname);
+            preparedStatement.executeUpdate();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
     }
 
     public void printTable() {
