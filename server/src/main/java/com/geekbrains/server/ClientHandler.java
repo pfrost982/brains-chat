@@ -49,6 +49,13 @@ public class ClientHandler {
                                 String[] tokens = msg.split("\\s", 3);
                                 server.privateMsg(this, tokens[1], tokens[2]);
                             }
+                            if(msg.startsWith("/nick ")) {
+                                String[] tokens = msg.split("\\s", 2);
+                                DBservice db = DBservice.getDBservice();
+                                db.changeNickname(this.nickname, tokens[1]);
+                                this.nickname = tokens[1];
+                                server.broadcastClientsList();
+                            }
                         } else {
                             server.broadcastMsg(nickname + ": " + msg);
                         }
