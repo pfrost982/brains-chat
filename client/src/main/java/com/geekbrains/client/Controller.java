@@ -7,6 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 
 import java.net.URL;
+import java.util.LinkedList;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
@@ -27,6 +28,8 @@ public class Controller implements Initializable {
 
     private boolean authenticated;
     private String nickname;
+    private String lastLogin;
+    private HistoryService historyService;
 
     public void setAuthenticated(boolean authenticated) {
         this.authenticated = authenticated;
@@ -56,6 +59,7 @@ public class Controller implements Initializable {
     }
 
     public void sendAuth() {
+        lastLogin = loginField.getText();
         Network.sendAuth(loginField.getText(), passField.getText());
         loginField.clear();
         passField.clear();
@@ -76,13 +80,24 @@ public class Controller implements Initializable {
     }
 
     public void linkCallbacks() {
-        Network.setCallOnException(args -> showAlert(args[0].toString()));
+        Network.setCallOnException(args -> {
+            showAlert(args[0].toString());
+            historyService.close();
+        });
 
-        Network.setCallOnCloseConnection(args -> setAuthenticated(false));
+        Network.setCallOnCloseConnection(args -> {
+            setAuthenticated(false);
+            historyService.close();
+        });
 
         Network.setCallOnAuthenticated(args -> {
             setAuthenticated(true);
             nickname = args[0].toString();
+            historyService = new HistoryService(lastLogin);
+            LinkedList<String> lastStrings = historyService.readLastStrings();
+            while (!lastStrings.isEmpty()) {
+                textArea.appendText(lastStrings.pollFirst() + "\n");
+            }
         });
 
         Network.setCallOnMsgReceived(args -> {
@@ -99,6 +114,7 @@ public class Controller implements Initializable {
                 }
             } else {
                 textArea.appendText(msg + "\n");
+                historyService.saveMessage(msg);
             }
         });
     }
