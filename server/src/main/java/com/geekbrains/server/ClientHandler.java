@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
+import java.util.logging.Level;
 
 public class ClientHandler {
     private String nickname;
@@ -35,12 +36,14 @@ public class ClientHandler {
                                 sendMsg("/authok " + nick);
                                 nickname = nick;
                                 server.subscribe(this);
+                                Server.LOGGER.log(Level.INFO, "Авторизовался клиент " + nickname);
                                 break;
                             }
                         }
                     }
                     while (true) {
                         String msg = in.readUTF();
+                        Server.LOGGER.log(Level.INFO, "Плучено сообщение от " + nickname + ": " + msg);
                         if(msg.startsWith("/")) {
                             if (msg.equals("/end")) {
                                 sendMsg("/end");
@@ -61,7 +64,7 @@ public class ClientHandler {
                         }
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Server.LOGGER.log(Level.WARNING, "Потеряна связь с клиентом " + nickname);
                 } finally {
                     ClientHandler.this.disconnect();
                 }
@@ -80,6 +83,7 @@ public class ClientHandler {
     }
 
     public void disconnect() {
+        Server.LOGGER.log(Level.FINE, "Закрытие сокета " + nickname);
         server.unsubscribe(this);
         try {
             in.close();
