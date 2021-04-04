@@ -66,6 +66,7 @@ public class Server {
                 return;
             }
         }
+        sender.sendMsg("Клиент " + receiverNick + " не найден");
         LOGGER.log(Level.WARNING, "Клиент приватного сообщения " + receiverNick + " не найден");
     }
 
